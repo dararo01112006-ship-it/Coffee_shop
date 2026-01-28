@@ -38,7 +38,7 @@ def health():
 @app.route("/")
 def index():
     # ត្រឡប់ទៅកាន់ទំព័រដើមភ្លាមៗ មិនឆ្លងកាត់ Loading ទេ
-    return send_from_directory('.', 'testweb.html')
+    return send_from_directory('.', 'index.html')
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
