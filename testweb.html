@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tube Coffee Order System</title>
+    <style>
+        :root { 
+            --primary: #FFD700; 
+            --bg: #F8F8F8; 
+            --success: #28a745; 
+            --dark: #333;
+            --danger: #e74c3c;
+        }
+        
+        * { box-sizing: border-box; }
+        
+        body { 
+            font-family: 'Khmer OS Battambang', Arial, sans-serif; 
+            margin: 0; 
+            background: #eee; 
+            display: flex; 
+            justify-content: center; 
+        }
+        
+        .app-container { 
+            width: 100%; 
+            max-width: 450px; 
+            background: var(--bg); 
+            min-height: 100vh; 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        
+        header {
+            padding: 15px; 
+            background: linear-gradient(135deg, var(--primary) 0%, #FFA500 100%);
+            border-bottom: 2px solid #f0a500;
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            display: flex;
+            justify-content: flex-start; 
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .shop-logo {
+            font-size: 32px;
+            line-height: 1;
+        }
+        
+        .shop-name { 
+            font-weight: bold; 
+            color: #000; 
+            font-size: 20px;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.5);
+        }
+
+        .content { 
+            flex: 1; 
+            padding: 15px; 
+            padding-bottom: 160px; 
+        }
+        
+        .page { display: none; }
+        .active-page { display: block; }
+
+        /* Promotion Slider - Scrolling from Left to Right */
+        .promo-slider { 
+            background: linear-gradient(90deg, var(--primary) 0%, #FFA500 50%, var(--primary) 100%);
+            padding: 12px; 
+            overflow: hidden; 
+            border-radius: 15px; 
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        
+        .promo-content { 
+            display: inline-block; 
+            white-space: nowrap; 
+            animation: marquee-ltr 20s linear infinite; 
+        }
+        
+        .promo-item { 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 8px; 
+            margin-right: 80px; 
+            font-weight: bold; 
+            font-size: 15px;
+            color: #000;
+        }
+        
+        @keyframes marquee-ltr { 
+            0% { transform: translateX(-100%); } 
+            100% { transform: translateX(100%); } 
+        }
+
+        /* Image Slider - Scrolling from Right to Left */
+        .image-slider {
+            overflow: hidden;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .image-slider-content {
+            display: flex;
+            animation: slide-rtl 20s linear infinite;
+        }
+
+        .slider-image {
+            width: 300px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin: 10px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        @keyframes slide-rtl {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Greeting Message */
+        .greeting-box {
+            background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border: 2px solid var(--primary);
+        }
+
+        .greeting-box .greeting-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .greeting-box .greeting-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .greeting-box .greeting-subtext {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* Queue Number Display */
+        .queue-display {
+            background: linear-gradient(135deg, var(--success) 0%, #20c997 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .queue-display .queue-label {
+            font-size: 14px;
+            margin-bottom: 8px;
+            opacity: 0.95;
+        }
+
+        .queue-display .queue-number {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .queue-display .queue-info {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        /* Search Box */
+        .search-box { 
+            width: 100%; 
+            padding: 14px 16px; 
+            border-radius: 12px; 
+            border: 2px solid #ddd; 
+            margin-bottom: 12px; 
+            font-size: 14px;
+            transition: border 0.3s;
+            background: white;
+        }
+        
+        .search-box:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+
+        /* Tabs */
+        .tabs { 
+            display: flex; 
+            gap: 8px; 
+            margin-bottom: 15px; 
+        }
+        
+        .tab-btn { 
+            flex: 1; 
+            padding: 12px; 
+            border: none; 
+            background: white; 
+            border-radius: 20px; 
+            font-size: 13px; 
+            cursor: pointer; 
+            transition: all 0.3s;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .tab-btn.active { 
+            background: var(--primary); 
+            font-weight: bold; 
+            box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+            transform: scale(1.05);
+        }
+
+        /* Product Card */
+        .product-card { 
+            display: flex; 
+            align-items: center; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 15px; 
+            margin-bottom: 12px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        
+        .product-card:active {
+            transform: scale(0.98);
+        }
+        
+        .product-img { 
+            width: 75px; 
+            height: 75px; 
+            border-radius: 12px; 
+            object-fit: cover; 
+            margin-right: 15px; 
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+            border: 2px solid #f5f5f5;
+        }
+        
+        .product-info { flex: 1; }
+        
+        .product-info b { 
+            font-size: 15px; 
+            display: block; 
+            margin-bottom: 4px;
+            color: #333;
+        }
+        
+        .product-info small { 
+            color: #888; 
+            font-size: 12px;
+            display: block;
+        }
+        
+        .price-tag { 
+            color: #d35400; 
+            font-weight: bold; 
+            margin-top: 6px; 
+            display: block;
+            font-size: 16px;
+        }
+        
+        .add-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        
+        .add-btn:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        /* Cart Item */
+        .cart-item {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .cart-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .cart-item-title {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .cart-item-price {
+            color: #d35400;
+            font-weight: bold;
+        }
+        
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        
+        .qty-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .qty-display {
+            min-width: 30px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .remove-btn {
+            margin-left: auto;
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .cart-item-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .cart-item-options span {
+            background: #f0f0f0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        
+        .cart-item-note {
+            background: #fff3cd;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-top: 8px;
+            border-left: 3px solid #ffc107;
+        }
+
+        /* Cart Summary */
+        .cart-summary {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .summary-row.total {
+            border-bottom: none;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--dark);
+            margin-top: 10px;
+            padding-top: 15px;
+            border-top: 2px solid var(--primary);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 25px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .option-group {
+            margin-bottom: 20px;
+        }
+        
+        .option-label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .option-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .option-btn {
+            padding: 10px 18px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        
+        .option-btn:hover {
+            border-color: var(--primary);
+        }
+        
+        .option-btn.selected {
+            background: var(--primary);
+            border-color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .note-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 13px;
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .note-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal-btn.cancel {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .modal-btn.confirm {
+            background: var(--success);
+            color: white;
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Bottom Navigation */
+        nav { 
+            position: fixed; 
+            bottom: 0; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            width: 100%; 
+            max-width: 450px; 
+            background: white; 
+            display: flex; 
+            box-shadow: 0 -3px 15px rgba(0,0,0,0.15); 
+            z-index: 99;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .nav-item { 
+            flex: 1; 
+            padding: 12px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            font-size: 13px;
+            color: #666;
+            position: relative;
+        }
+        
+        .nav-item:hover {
+            background: #f8f8f8;
+        }
+        
+        .nav-item.active { 
+            color: var(--primary); 
+            font-weight: bold; 
+        }
+        
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: 0 0 3px 3px;
+        }
+        
+        .nav-icon { 
+            font-size: 22px; 
+            display: block; 
+            margin-bottom: 4px; 
+        }
+
+        /* Cart Badge */
+        .cart-badge {
+            position: absolute;
+            top: 5px;
+            right: 20%;
+            background: var(--danger);
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: bold;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Order Section */
+        .order-section {
+            position: fixed;
+            bottom: 65px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            padding: 15px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: none;
+            align-items: center;
+            gap: 15px;
+            z-index: 98;
+            border-top: 2px solid #f0f0f0;
+        }
+        
+        .order-info {
+            flex: 1;
+        }
+        
+        .order-info small {
+            display: block;
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        
+        .order-info .total {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--dark);
+        }
+        
+        .order-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+        }
+        
+        .order-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        /* Queue Number at Bottom */
+        .queue-bottom {
+            position: fixed;
+            bottom: 65px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 450px;
+            background: linear-gradient(135deg, var(--success) 0%, #20c997 100%);
+            padding: 12px 20px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 97;
+            box-shadow: 0 -2px 10px rgba(40, 167, 69, 0.3);
+            color: white;
+        }
+
+        .queue-bottom .queue-text {
+            font-size: 13px;
+            opacity: 0.95;
+        }
+
+        .queue-bottom .queue-num {
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .queue-bottom .queue-time {
+            font-size: 11px;
+            opacity: 0.85;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header>
+            <div class="shop-logo">☕</div>
+            <div class="shop-name">Tube Coffee</div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="content">
+            <!-- Home Page -->
+            <div id="home" class="page active-page">
+                <!-- Promotion Slider -->
+                <div class="promo-slider">
+                    <div class="promo-content">
+                        <span class="promo-item">🎉 ប្រូម៉ូសិន! ទិញ 2 ពែង ទទួល 1 ពែងឥតគិតថ្លៃ</span>
+                        <span class="promo-item">☕ កាហ្វេថ្មីៗ ជាមួយរសជាតិពិសេស</span>
+                        <span class="promo-item">🍰 ខេកឆ្ងាញ់ជាមួយតម្លៃពិសេស</span>
+                        <span class="promo-item">🎁 ចុះឈ្មោះសមាជិក ទទួលបញ្ចុះតម្លៃ 10%</span>
+                        <span class="promo-item">⭐ ស្រស់ថ្លា រីករាយ ជាមួយ Tube Coffee</span>
+                    </div>
+                </div>
+
+                <!-- Image Slider -->
+                <div class="image-slider">
+                    <div class="image-slider-content" id="image-slider-content">
+                        <!-- Images will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Greeting or Queue Number Display -->
+                <div id="status-display">
+                    <div class="greeting-box">
+                        <div class="greeting-icon">👋</div>
+                        <div class="greeting-text">សួស្តី! ថ្ងៃថ្មីស្រស់ស្រាយ!</div>
+                        <div class="greeting-subtext">សូមស្វាគមន៍មកកាន់ Tube Coffee 🌟</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cart Page -->
+            <div id="cart" class="page">
+                <h2 style="margin: 0 0 20px 0; font-size: 20px;">🛒 កន្ត្រករបស់ខ្ញុំ</h2>
+                <div id="cart-items"></div>
+                <div id="cart-summary"></div>
+            </div>
+
+            <!-- Menu Page -->
+            <div id="menu" class="page">
+                <h2 style="margin: 0 0 20px 0; font-size: 20px;">📋 បញ្ជីទំនិញទាំងអស់</h2>
+                
+                <!-- Search Bar -->
+                <input type="text" class="search-box" placeholder="🔍 ស្វែងរកភេសជ្ជៈ..." id="search-input-menu" onkeyup="searchProductsMenu()">
+
+                <!-- Category Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="filterMenuPage('cool', this)">🧊 ត្រជាក់</button>
+                    <button class="tab-btn" onclick="filterMenuPage('hot', this)">☕ ក្តៅ</button>
+                    <button class="tab-btn" onclick="filterMenuPage('milk', this)">🥛 ទឹកដោះគោ</button>
+                    <button class="tab-btn" onclick="filterMenuPage('tea', this)">🍵 តែ</button>
+                </div>
+
+                <!-- Product List -->
+                <div id="product-list-menu"></div>
+            </div>
+        </div>
+
+        <!-- Options Modal -->
+        <div id="options-modal" class="modal" onclick="closeModalOnOutsideClick(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <div class="modal-title">⚙️ ជម្រើសបន្ថែម</div>
+                    <button class="close-btn" onclick="closeModal()">&times;</button>
+                </div>
+                
+                <div class="option-group">
+                    <label class="option-label">🍬 កម្រិតស្ករ</label>
+                    <div class="option-buttons">
+                        <button class="option-btn" onclick="selectOption('sugar', 'ធម្មតា', this)">ធម្មតា</button>
+                        <button class="option-btn" onclick="selectOption('sugar', 'តិច', this)">តិច</button>
+                        <button class="option-btn" onclick="selectOption('sugar', 'គ្មាន', this)">គ្មាន</button>
+                    </div>
+                </div>
+                
+                <div class="option-group" id="ice-options">
+                    <label class="option-label">🧊 កម្រិតទឹកកក</label>
+                    <div class="option-buttons">
+                        <button class="option-btn" onclick="selectOption('ice', 'ធម្មតា', this)">ធម្មតា</button>
+                        <button class="option-btn" onclick="selectOption('ice', 'តិច', this)">តិច</button>
+                        <button class="option-btn" onclick="selectOption('ice', 'គ្មាន', this)">គ្មាន</button>
+                    </div>
+                </div>
+                
+                <div class="option-group">
+                    <label class="option-label">📝 កំណត់ចំណាំ</label>
+                    <textarea id="order-note" class="note-input" placeholder="សរសេរកំណត់ចំណាំបន្ថែម..."></textarea>
+                </div>
+                
+                <div class="modal-footer">
+                    <button class="modal-btn cancel" onclick="closeModal()">បោះបង់</button>
+                    <button class="modal-btn confirm" onclick="confirmOptions()">បញ្ជាក់</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Button Section (shows on home page when cart has items) -->
+        <div id="order-section" class="order-section">
+            <div class="order-info">
+                <small>សរុបទាំងអស់</small>
+                <div class="total">$<span id="total-display">0.00</span></div>
+            </div>
+            <button class="order-btn" onclick="processOrder()">
+                <span>🛒 កុម្ម៉ង់ឥឡូវ</span>
+            </button>
+        </div>
+
+        <!-- Queue Number at Bottom -->
+        <div id="queue-bottom" class="queue-bottom">
+            <div>
+                <div class="queue-text">លេខរង់ចាំរបស់អ្នក</div>
+                <div class="queue-time" id="queue-timer">សុពលភាពសល់៖ 5:00</div>
+            </div>
+            <div class="queue-num" id="queue-num-bottom">001</div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <nav>
+            <div class="nav-item active" onclick="navTo('home', 'ទំព័រដើម', this)">
+                <span class="nav-icon">🏠</span>
+                <span>ទំព័រដើម</span>
+            </div>
+            <div class="nav-item" onclick="navTo('menu', 'បញ្ជីទំនិញ', this)">
+                <span class="nav-icon">📋</span>
+                <span>បញ្ជីទំនិញ</span>
+            </div>
+            <div class="nav-item" onclick="navTo('cart', 'កន្ត្រក', this)">
+                <span class="nav-icon">🛒</span>
+                <span>កន្ត្រក</span>
+            </div>
+        </nav>
+    </div>
+
+<script>
+    // Sample Products Data - 10 items per category
+    const products = [
+        // Cool Drinks (10 items)
+        { id: 1, km: "កាហ្វេត្រជាក់", en: "Iced Coffee", price: 2.5, type: "cool", image: "https://images.unsplash.com/photo-1517487881594-2787fef5ebf7?w=400" },
+        { id: 2, km: "ឡាតេត្រជាក់", en: "Iced Latte", price: 3.0, type: "cool", image: "https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=400" },
+        { id: 3, km: "កាពូឈីណូត្រជាក់", en: "Iced Cappuccino", price: 3.5, type: "cool", image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400" },
+        { id: 4, km: "អាមេរីកាណូត្រជាក់", en: "Iced Americano", price: 2.75, type: "cool", image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400" },
+        { id: 5, km: "ម៉ូកាត្រជាក់", en: "Iced Mocha", price: 3.75, type: "cool", image: "https://images.unsplash.com/photo-1578374173703-221b39951943?w=400" },
+        { id: 6, km: "ការ៉ាម៉ែលម៉ាឈីយ៉ាតូត្រជាក់", en: "Iced Caramel Macchiato", price: 4.0, type: "cool", image: "https://images.unsplash.com/photo-1599639957043-f3aa5c986398?w=400" },
+        { id: 7, km: "វ៉ានីឡាឡាតេត្រជាក់", en: "Iced Vanilla Latte", price: 3.5, type: "cool", image: "https://images.unsplash.com/photo-1542181961-9590d0c79dab?w=400" },
+        { id: 8, km: "ហេហ្សែលណាត់ឡាតេត្រជាក់", en: "Iced Hazelnut Latte", price: 3.75, type: "cool", image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400" },
+        { id: 9, km: "ប្រាហាំកាហ្វេត្រជាក់", en: "Iced Vietnamese Coffee", price: 3.25, type: "cool", image: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400" },
+        { id: 10, km: "អេស្ព្រេសូត្រជាក់", en: "Iced Espresso", price: 2.5, type: "cool", image: "https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?w=400" },
+        
+        // Hot Drinks (10 items)
+        { id: 11, km: "កាហ្វេក្តៅ", en: "Hot Coffee", price: 2.0, type: "hot", image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400" },
+        { id: 12, km: "ឡាតេក្តៅ", en: "Hot Latte", price: 2.5, type: "hot", image: "https://images.unsplash.com/photo-1561882468-9110e03e0f78?w=400" },
+        { id: 13, km: "កាពូឈីណូក្តៅ", en: "Hot Cappuccino", price: 3.0, type: "hot", image: "https://images.unsplash.com/photo-1534778101976-62847782c213?w=400" },
+        { id: 14, km: "អាមេរីកាណូក្តៅ", en: "Hot Americano", price: 2.25, type: "hot", image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400" },
+        { id: 15, km: "អេស្ព្រេសូ", en: "Espresso", price: 2.0, type: "hot", image: "https://images.unsplash.com/photo-1579992357154-faf4bde95b3d?w=400" },
+        { id: 16, km: "ម៉ូកាក្តៅ", en: "Hot Mocha", price: 3.5, type: "hot", image: "https://images.unsplash.com/photo-1607434472257-d9f8e57a643d?w=400" },
+        { id: 17, km: "ការ៉ាម៉ែលម៉ាឈីយ៉ាតូក្តៅ", en: "Hot Caramel Macchiato", price: 3.75, type: "hot", image: "https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?w=400" },
+        { id: 18, km: "វ៉ានីឡាឡាតេក្តៅ", en: "Hot Vanilla Latte", price: 3.25, type: "hot", image: "https://images.unsplash.com/photo-1582997171758-5e8e1b92e5be?w=400" },
+        { id: 19, km: "ហេហ្សែលណាត់ឡាតេក្តៅ", en: "Hot Hazelnut Latte", price: 3.5, type: "hot", image: "https://images.unsplash.com/photo-1485808191679-5f86510681a2?w=400" },
+        { id: 20, km: "ឡាតេម៉ាឈីយ៉ាតូ", en: "Latte Macchiato", price: 3.0, type: "hot", image: "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=400" },
+        
+        // Milk-based (10 items)
+        { id: 21, km: "ទឹកដោះគោត្រជាក់", en: "Fresh Milk", price: 2.0, type: "milk", image: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400" },
+        { id: 22, km: "សូកូឡាក្តៅ", en: "Hot Chocolate", price: 3.0, type: "milk", image: "https://images.unsplash.com/photo-1542990253-0d0f5be5f0ed?w=400" },
+        { id: 23, km: "ម៉ាឈាឡាតេ", en: "Matcha Latte", price: 3.5, type: "milk", image: "https://images.unsplash.com/photo-1536013564040-e92a4c51aaf3?w=400" },
+        { id: 24, km: "ទឹកដោះគោសូកូឡា", en: "Chocolate Milk", price: 2.5, type: "milk", image: "https://images.unsplash.com/photo-1556910638-e74bb1ad2f69?w=400" },
+        { id: 25, km: "ទឹកដោះគោស្តូបឺរី", en: "Strawberry Milk", price: 2.75, type: "milk", image: "https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=400" },
+        { id: 26, km: "ទឹកដោះគោផ្លែឈើរួម", en: "Mixed Fruit Milk", price: 3.0, type: "milk", image: "https://images.unsplash.com/photo-1525385133512-2f3bdd039054?w=400" },
+        { id: 27, km: "វ៉ានីឡាមីលខេក", en: "Vanilla Milkshake", price: 3.5, type: "milk", image: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=400" },
+        { id: 28, km: "សូកូឡាមីលខេក", en: "Chocolate Milkshake", price: 3.75, type: "milk", image: "https://images.unsplash.com/photo-1579954115545-a95591f28bfc?w=400" },
+        { id: 29, km: "ម៉ាឈាមីលខេក", en: "Matcha Milkshake", price: 4.0, type: "milk", image: "https://images.unsplash.com/photo-1545241047-6083a3684587?w=400" },
+        { id: 30, km: "ទឹកដោះគោទំពាំងបាយជូ", en: "Taro Milk", price: 3.25, type: "milk", image: "https://images.unsplash.com/photo-1563227812-0ea4c22e6cc8?w=400" },
+        
+        // Tea (10 items)
+        { id: 31, km: "តែត្រជាក់", en: "Iced Tea", price: 1.5, type: "tea", image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400" },
+        { id: 32, km: "តែក្តៅ", en: "Hot Tea", price: 1.25, type: "tea", image: "https://images.unsplash.com/photo-1594631661960-3e5d4d8f2f88?w=400" },
+        { id: 33, km: "តែបៃតង", en: "Green Tea", price: 2.0, type: "tea", image: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400" },
+        { id: 34, km: "តែក្រហម", en: "Black Tea", price: 2.0, type: "tea", image: "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?w=400" },
+        { id: 35, km: "តែម្លិះ", en: "Lemon Tea", price: 2.25, type: "tea", image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400" },
+        { id: 36, km: "តែទំពាំងបាយជូ", en: "Taro Tea", price: 2.75, type: "tea", image: "https://images.unsplash.com/photo-1571934811356-5cc061b6821f?w=400" },
+        { id: 37, km: "តែទឹកដោះគោ", en: "Milk Tea", price: 2.5, type: "tea", image: "https://images.unsplash.com/photo-1558857563-b1d6c0c2b054?w=400" },
+        { id: 38, km: "ម៉ាឈាតែ", en: "Matcha Tea", price: 3.0, type: "tea", image: "https://images.unsplash.com/photo-1515823064-d6e0c04616a7?w=400" },
+        { id: 39, km: "តែផ្លែឈើ", en: "Fruit Tea", price: 2.5, type: "tea", image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=400" },
+        { id: 40, km: "តែថៃ", en: "Thai Tea", price: 2.75, type: "tea", image: "https://images.unsplash.com/photo-1578374173703-221b39951943?w=400" }
+    ];
+
+    // State Management
+    let cart = [];
+    let currentProduct = null;
+    let selectedOptions = { sugar: null, ice: null, note: '' };
+    let queueNumber = null;
+    let queueStartTime = null;
+    let queueTimerInterval = null;
+    const QUEUE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+    // Generate Queue Number (001-999)
+    function generateQueueNumber() {
+        return String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
+    }
+
+    // Get or Create Queue Number
+    function getQueueNumber() {
+        const now = Date.now();
+        
+        // Check if existing queue is still valid
+        if (queueNumber && queueStartTime) {
+            const elapsed = now - queueStartTime;
+            if (elapsed < QUEUE_DURATION) {
+                return queueNumber;
+            }
+        }
+        
+        // Generate new queue number
+        queueNumber = generateQueueNumber();
+        queueStartTime = now;
+        startQueueTimer();
+        return queueNumber;
+    }
+
+    // Start Queue Timer
+    function startQueueTimer() {
+        if (queueTimerInterval) {
+            clearInterval(queueTimerInterval);
+        }
+        
+        updateQueueTimer();
+        queueTimerInterval = setInterval(updateQueueTimer, 1000);
+    }
+
+    // Update Queue Timer Display
+    function updateQueueTimer() {
+        if (!queueStartTime) return;
+        
+        const now = Date.now();
+        const elapsed = now - queueStartTime;
+        const remaining = QUEUE_DURATION - elapsed;
+        
+        if (remaining <= 0) {
+            // Queue expired, generate new number
+            queueNumber = null;
+            queueStartTime = null;
+            clearInterval(queueTimerInterval);
+            hideQueueDisplay();
+            return;
+        }
+        
+        const minutes = Math.floor(remaining / 60000);
+        const seconds = Math.floor((remaining % 60000) / 1000);
+        const timerText = `សុពលភាពសល់៖ ${minutes}:${String(seconds).padStart(2, '0')}`;
+        
+        const timerElement = document.getElementById('queue-timer');
+        if (timerElement) {
+            timerElement.innerText = timerText;
+        }
+    }
+
+    // Show Queue Display
+    function showQueueDisplay() {
+        const statusDisplay = document.getElementById('status-display');
+        const queueNum = getQueueNumber();
+        
+        statusDisplay.innerHTML = `
+            <div class="queue-display">
+                <div class="queue-label">🎫 លេខរង់ចាំរបស់អ្នក</div>
+                <div class="queue-number">${queueNum}</div>
+                <div class="queue-info">សូមរង់ចាំការហៅ</div>
+                <div class="queue-info" id="queue-timer" style="margin-top: 8px; font-weight: bold;">សុពលភាពសល់៖ 5:00</div>
+            </div>
+        `;
+        
+        // Show queue at bottom
+        const queueBottom = document.getElementById('queue-bottom');
+        const queueNumBottom = document.getElementById('queue-num-bottom');
+        queueBottom.style.display = 'flex';
+        queueNumBottom.innerText = queueNum;
+        
+        startQueueTimer();
+    }
+
+    // Hide Queue Display
+    function hideQueueDisplay() {
+        const queueBottom = document.getElementById('queue-bottom');
+        queueBottom.style.display = 'none';
+    }
+
+    // Navigation
+    function navTo(pageId, pageTitle, element) {
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active-page');
+        });
+        
+        // Show selected page
+        document.getElementById(pageId).classList.add('active-page');
+        
+        // Update active nav item
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        element.classList.add('active');
+        
+        // Render cart if on cart page
+        if(pageId === 'cart') {
+            renderCart();
+        }
+        
+        // Load menu page products
+        if(pageId === 'menu') {
+            filterMenuPage('cool', document.querySelector('#menu .tab-btn'));
+        }
+        
+        // Update footer visibility
+        updateFooter(pageId);
+    }
+
+    // Filter Menu Page
+    function filterMenuPage(category, button) {
+        // Update active tab
+        const menuPage = document.getElementById('menu');
+        menuPage.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        button.classList.add('active');
+        
+        // Filter and display products
+        const filtered = products.filter(p => p.type === category);
+        displayProductsMenu(filtered);
+    }
+
+    // Search Products (Menu page)
+    function searchProductsMenu() {
+        const query = document.getElementById('search-input-menu').value.toLowerCase();
+        const filtered = products.filter(p => 
+            p.km.toLowerCase().includes(query) || 
+            p.en.toLowerCase().includes(query)
+        );
+        displayProductsMenu(filtered);
+    }
+
+    // Display Products on Menu Page
+    function displayProductsMenu(items) {
+        const container = document.getElementById('product-list-menu');
+        
+        if(items.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔍</div>
+                    <div>រកមិនឃើញទេ</div>
+                </div>
+            `;
+            return;
+        }
+        
+        container.innerHTML = items.map(product => `
+            <div class="product-card" onclick="openModal(${product.id})">
+                <img src="${product.image}" alt="${product.km}" class="product-img" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22100%22 height=%22100%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2230%22%3E☕%3C/text%3E%3C/svg%3E'">
+                <div class="product-info">
+                    <b>${product.km}</b>
+                    <small>${product.en}</small>
+                    <span class="price-tag">$${product.price.toFixed(2)}</span>
+                </div>
+                <button class="add-btn" onclick="event.stopPropagation(); quickAdd(${product.id}, event)">➕ បន្ថែម</button>
+            </div>
+        `).join('');
+    }
+
+    // Load Image Slider
+    function loadImageSlider() {
+        const sliderContainer = document.getElementById('image-slider-content');
+        
+        // Get sample images from products (first 10 products)
+        const sampleProducts = products.slice(0, 10);
+        
+        // Duplicate images for seamless loop
+        const images = [...sampleProducts, ...sampleProducts];
+        
+        sliderContainer.innerHTML = images.map(product => `
+            <img src="${product.image}" alt="${product.km}" class="slider-image" 
+                 onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22%3E%3Crect fill=%22%23f0f0f0%22 width=%22300%22 height=%22200%22/%3E%3Ctext fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 font-size=%2240%22%3E☕%3C/text%3E%3C/svg%3E'">
+        `).join('');
+    }
+
+    // Quick Add to Cart (without options)
+    function quickAdd(productId, event) {
+        const product = products.find(p => p.id === productId);
+        if(!product) return;
+        
+        addToCart(product, null, event);
+    }
+
+    // Open Options Modal
+    function openModal(productId) {
+        const product = products.find(p => p.id === productId);
+        if(!product) return;
+        
+        currentProduct = product;
+        selectedOptions = { sugar: null, ice: null, note: '' };
+        
+        // Show/hide ice options based on drink type
+        const iceOptions = document.getElementById('ice-options');
+        iceOptions.style.display = product.type === 'cool' ? 'block' : 'none';
+        
+        // Reset selections
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        document.getElementById('order-note').value = '';
+        
+        // Show modal
+        document.getElementById('options-modal').style.display = 'block';
+    }
+
+    // Close Modal
+    function closeModal() {
+        document.getElementById('options-modal').style.display = 'none';
+        currentProduct = null;
+    }
+
+    // Close Modal on Outside Click
+    function closeModalOnOutsideClick(event) {
+        if(event.target.id === 'options-modal') {
+            closeModal();
+        }
+    }
+
+    // Select Option
+    function selectOption(type, value, button) {
+        // Remove selection from siblings
+        const siblings = button.parentElement.querySelectorAll('.option-btn');
+        siblings.forEach(btn => btn.classList.remove('selected'));
+        
+        // Add selection to clicked button
+        button.classList.add('selected');
+        selectedOptions[type] = value;
+    }
+
+    // Confirm Options and Add to Cart
+    function confirmOptions() {
+        if(!currentProduct) return;
+        
+        selectedOptions.note = document.getElementById('order-note').value.trim();
+        
+        addToCart(currentProduct, selectedOptions);
+        closeModal();
+    }
+
+    // Add to Cart
+    function addToCart(product, options = null, event = null) {
+        const cartKey = options 
+            ? `${product.id}-${options.sugar || ''}-${options.ice || ''}`
+            : `${product.id}`;
+        
+        const existingItem = cart.find(item => item.cartKey === cartKey);
+        
+        if(existingItem) {
+            existingItem.qty++;
+        } else {
+            cart.push({ 
+                ...product, 
+                qty: 1,
+                cartKey: cartKey,
+                options: options ? {...options} : null
+            });
+        }
+        
+        updateBadge();
+        
+        // Show brief feedback
+        if(event && event.target && event.target.classList.contains('add-btn')) {
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = '✓ បានបន្ថែម';
+            btn.style.background = '#218838';
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = '';
+            }, 800);
+        }
+    }
+
+    // Update Cart Badge
+    function updateBadge() {
+        const badge = document.getElementById('cart-count');
+        const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
+        
+        if(totalItems > 0) {
+            badge.style.display = 'flex';
+            badge.innerText = totalItems;
+        } else {
+            badge.style.display = 'none';
+        }
+        
+        updateOrderButton();
+    }
+
+    // Update Order Button
+    function updateOrderButton() {
+        const orderSection = document.getElementById('order-section');
+        const totalDisplay = document.getElementById('total-display');
+        const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        
+        if(cart.length > 0) {
+            orderSection.style.display = 'flex';
+            totalDisplay.innerText = total.toFixed(2);
+        } else {
+            orderSection.style.display = 'none';
+        }
+    }
+
+    // Update Footer Visibility
+    function updateFooter(pageId) {
+        const orderSection = document.getElementById('order-section');
+        if(pageId === 'cart' && cart.length > 0) {
+            orderSection.style.display = 'none';
+        } else if(cart.length > 0 && pageId === 'home') {
+            orderSection.style.display = 'flex';
+        }
+    }
+
+    // Render Cart
+    function renderCart() {
+        const container = document.getElementById('cart-items');
+        const summaryContainer = document.getElementById('cart-summary');
+        
+        if(cart.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">🛒</div>
+                    <div>កន្ត្រករបស់អ្នកទទេ</div>
+                    <div style="font-size: 12px; margin-top: 10px;">សូមបន្ថែមទំនិញពីបញ្ជី Menu</div>
+                </div>
+            `;
+            summaryContainer.innerHTML = '';
+            return;
+        }
+
+        container.innerHTML = cart.map(item => {
+            let optionsHtml = '';
+            let noteHtml = '';
+            
+            if(item.options) {
+                const opts = [];
+                if(item.options.sugar) opts.push(`🍬 ស្ករ: ${item.options.sugar}`);
+                if(item.options.ice && item.type === 'cool') opts.push(`🧊 ទឹកកក: ${item.options.ice}`);
+                
+                if(opts.length > 0) {
+                    optionsHtml = `<div class="cart-item-options">${opts.map(o => `<span>${o}</span>`).join('')}</div>`;
+                }
+                
+                if(item.options.note) {
+                    noteHtml = `<div class="cart-item-note">📝 ${item.options.note}</div>`;
+                }
+            }
+            
+            return `
+                <div class="cart-item">
+                    <div class="cart-item-header">
+                        <div class="cart-item-title">${item.km}</div>
+                        <div class="cart-item-price">$${(item.price * item.qty).toFixed(2)}</div>
+                    </div>
+                    ${optionsHtml}
+                    ${noteHtml}
+                    <div class="cart-item-controls">
+                        <button class="qty-btn" onclick="decreaseQty('${item.cartKey}')">-</button>
+                        <span class="qty-display">${item.qty}</span>
+                        <button class="qty-btn" onclick="increaseQty('${item.cartKey}')">+</button>
+                        <button class="remove-btn" onclick="removeFromCart('${item.cartKey}')">🗑️ លុប</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Add summary
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        const queueNum = queueNumber || 'មិនទាន់មាន';
+        
+        summaryContainer.innerHTML = `
+            <div class="cart-summary">
+                <div class="summary-row">
+                    <span>លេខរង់ចាំ:</span>
+                    <span><b>${queueNum}</b></span>
+                </div>
+                <div class="summary-row">
+                    <span>សរុបរង:</span>
+                    <span>$${subtotal.toFixed(2)}</span>
+                </div>
+                <div class="summary-row total">
+                    <span>សរុបទាំងអស់:</span>
+                    <span>$${subtotal.toFixed(2)}</span>
+                </div>
+            </div>
+            <button class="order-btn" style="width: 100%; margin-top: 15px;" onclick="processOrder()">
+                <span>🛒 កុម្ម៉ង់ឥឡូវ</span>
+            </button>
+        `;
+    }
+
+    // Increase Quantity
+    function increaseQty(cartKey) {
+        const item = cart.find(i => i.cartKey === cartKey);
+        if(item) {
+            item.qty++;
+            updateBadge();
+            renderCart();
+        }
+    }
+
+    // Decrease Quantity
+    function decreaseQty(cartKey) {
+        const item = cart.find(i => i.cartKey === cartKey);
+        if(item && item.qty > 1) {
+            item.qty--;
+            updateBadge();
+            renderCart();
+        }
+    }
+
+    // Remove from Cart
+    function removeFromCart(cartKey) {
+        cart = cart.filter(item => item.cartKey !== cartKey);
+        updateBadge();
+        renderCart();
+    }
+
+    // Process Order
+    async function processOrder() {
+        if(cart.length === 0) {
+            alert("សូមបន្ថែមទំនិញជាមុនសិន!");
+            return;
+        }
+
+        const btn = document.querySelector('.order-btn span');
+        const originalText = btn.innerText;
+        btn.innerText = "⏳ កំពុងដំណើរការ...";
+
+        // Get Location (optional)
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(async (position) => {
+                await sendOrder(position.coords.latitude, position.coords.longitude);
+                btn.innerText = originalText;
+            }, async () => {
+                await sendOrder(null, null);
+                btn.innerText = originalText;
+            });
+        } else {
+            await sendOrder(null, null);
+            btn.innerText = originalText;
+        }
+    }
+
+    // Send Order to Server
+    async function sendOrder(lat, lng) {
+        const queueNum = getQueueNumber();
+        
+        const payload = {
+            queueNumber: queueNum,
+            items: cart.map(item => ({
+                id: item.id,
+                name_km: item.km,
+                name_en: item.en,
+                price: item.price,
+                qty: item.qty,
+                subtotal: item.price * item.qty,
+                options: item.options || null
+            })),
+            total: cart.reduce((sum, item) => sum + (item.price * item.qty), 0),
+            location: lat && lng ? { lat, lng } : null,
+            timestamp: new Date().toISOString()
+        };
+
+        try {
+            // This would send to your backend
+            console.log('Order:', payload);
+            
+            alert(`✅ កុម្ម៉ង់បានជោគជ័យ!\n\n🎫 លេខរង់ចាំ: ${queueNum}\nសរុប: $${payload.total.toFixed(2)}\n\nសូមអរគុណ! 🙏`);
+            
+            // Show queue number
+            showQueueDisplay();
+            
+            // Reset cart
+            cart = [];
+            updateBadge();
+            navTo('home', 'ទំព័រដើម', document.querySelectorAll('.nav-item')[0]);
+            
+        } catch (e) {
+            console.error('Order error:', e);
+            alert("❌ មិនអាចបញ្ជូនកុម្ម៉ង់បានទេ! សូមព្យាយាមម្តងទៀត។");
+        }
+    }
+
+    // Initialize - Load image slider on home page
+    window.addEventListener('DOMContentLoaded', () => {
+        // Load image slider
+        loadImageSlider();
+    });
+</script>
+</body>
+</html>

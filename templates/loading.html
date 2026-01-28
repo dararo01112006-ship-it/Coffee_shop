@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading - Tube Coffee</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Khmer OS Battambang', Arial, sans-serif;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        .loading-container {
+            text-align: center;
+            color: #333;
+        }
+        
+        .logo {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .shop-name {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 20px;
+            border: 5px solid rgba(255,255,255,0.3);
+            border-top: 5px solid #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            color: #fff;
+            font-weight: bold;
+        }
+        
+        .loading-subtext {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-container">
+        <div class="logo">☕</div>
+        <div class="shop-name">Tube Coffee</div>
+        <div class="spinner"></div>
+        <div class="loading-text">កំពុងដំណើរការ...</div>
+        <div class="loading-subtext">សូមរង់ចាំបន្តិច</div>
+    </div>
+
+    <script>
+        // Auto reload every 2 seconds to check if app is ready
+        setTimeout(() => {
+            window.location.reload();
+        }, 2000);
+    </script>
+</body>
+</html>
