@@ -1355,43 +1355,50 @@
 
     // Send Order to Server
     async function sendOrder(lat, lng) {
-        const queueNum = getQueueNumber();
-        
-        const payload = {
-            queueNumber: queueNum,
-            items: cart.map(item => ({
-                id: item.id,
-                name_km: item.km,
-                name_en: item.en,
-                price: item.price,
-                qty: item.qty,
-                subtotal: item.price * item.qty,
-                options: item.options || null
-            })),
-            total: cart.reduce((sum, item) => sum + (item.price * item.qty), 0),
-            location: lat && lng ? { lat, lng } : null,
-            timestamp: new Date().toISOString()
-        };
+    const queueNum = getQueueNumber();
+    
+    const payload = {
+        queueNumber: queueNum,
+        items: cart.map(item => ({
+            id: item.id,
+            name_km: item.km,
+            name_en: item.en,
+            price: item.price,
+            qty: item.qty,
+            subtotal: item.price * item.qty,
+            options: item.options || null
+        })),
+        total: cart.reduce((sum, item) => sum + (item.price * item.qty), 0),
+        location: lat && lng ? { lat, lng } : null
+    };
 
-        try {
-            // This would send to your backend
-            console.log('Order:', JSON.stringify(payload, null, 2));
-            
-            alert(`✅ កុម្ម៉ង់បានជោគជ័យ!\n\n🎫 លេខរង់ចាំ: ${queueNum}\nសរុប: $${payload.total.toFixed(2)}\n\nសូមអរគុណ! 🙏`);
-            
-            // Show queue number
-            showQueueDisplay();
-            
-            // Reset cart
-            cart = [];
+    try {
+        // បន្ថែមការផ្ញើទៅកាន់ Backend (/order)
+        const response = await fetch('/order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(`✅ ${result.message}`);
+            showQueueDisplay(); // បង្ហាញលេខរង់ចាំ
+            cart = []; // លុបឥវ៉ាន់ចេញពីកន្ត្រក
             updateBadge();
             navTo('home', 'ទំព័រដើម', document.querySelectorAll('.nav-item')[0]);
-            
-        } catch (e) {
-            console.error('Order error:', e);
-            alert("❌ មិនអាចបញ្ជូនកុម្ម៉ង់បានទេ! សូមព្យាយាមម្តងទៀត។");
+        } else {
+            alert(`❌ បញ្ហា៖ ${result.error}`);
         }
+        
+    } catch (e) {
+        console.error('Order error:', e);
+        alert("❌ មិនអាចទាក់ទងទៅកាន់ Server បានទេ! សូមពិនិត្យមើលថាតើអ្នកបាន Run Flask ហើយឬនៅ?");
     }
+}
 
     // Initialize - Load image slider on home page
     window.addEventListener('DOMContentLoaded', () => {
