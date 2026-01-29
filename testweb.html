@@ -716,39 +716,6 @@
             box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
         }
 
-        /* Queue Number at Bottom */
-        .queue-bottom {
-            position: fixed;
-            bottom: 65px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 450px;
-            background: linear-gradient(135deg, var(--success) 0%, #20c997 100%);
-            padding: 12px 20px;
-            display: none;
-            align-items: center;
-            justify-content: space-between;
-            z-index: 97;
-            box-shadow: 0 -2px 10px rgba(40, 167, 69, 0.3);
-            color: white;
-        }
-
-        .queue-bottom .queue-text {
-            font-size: 13px;
-            opacity: 0.95;
-        }
-
-        .queue-bottom .queue-num {
-            font-size: 28px;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .queue-bottom .queue-time {
-            font-size: 11px;
-            opacity: 0.85;
-        }
     </style>
 </head>
 <body>
@@ -867,15 +834,6 @@
             </button>
         </div>
 
-        <!-- Queue Number at Bottom -->
-        <div id="queue-bottom" class="queue-bottom">
-            <div>
-                <div class="queue-text">លេខរង់ចាំរបស់អ្នក</div>
-                <div class="queue-time" id="queue-timer">សុពលភាពសល់៖ 5:00</div>
-            </div>
-            <div class="queue-num" id="queue-num-bottom">001</div>
-        </div>
-
         <!-- Bottom Navigation -->
         <nav>
             <div class="nav-item active" onclick="navTo('home', 'ទំព័រដើម', this)">
@@ -889,6 +847,7 @@
             <div class="nav-item" onclick="navTo('cart', 'កន្ត្រក', this)">
                 <span class="nav-icon">🛒</span>
                 <span>កន្ត្រក</span>
+                <span id="cart-count" class="cart-badge">0</span>
             </div>
         </nav>
     </div>
@@ -959,21 +918,16 @@
         return String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
     }
 
-    // Get or Create Queue Number
+    // Get or Create Queue Number (only once per session)
     function getQueueNumber() {
-        const now = Date.now();
-        
-        // Check if existing queue is still valid
-        if (queueNumber && queueStartTime) {
-            const elapsed = now - queueStartTime;
-            if (elapsed < QUEUE_DURATION) {
-                return queueNumber;
-            }
+        // Return existing queue number if already generated
+        if (queueNumber) {
+            return queueNumber;
         }
         
-        // Generate new queue number
+        // Generate new queue number (first time only)
         queueNumber = generateQueueNumber();
-        queueStartTime = now;
+        queueStartTime = Date.now();
         startQueueTimer();
         return queueNumber;
     }
@@ -997,11 +951,12 @@
         const remaining = QUEUE_DURATION - elapsed;
         
         if (remaining <= 0) {
-            // Queue expired, generate new number
-            queueNumber = null;
-            queueStartTime = null;
+            // Timer expired but keep queue number displayed
             clearInterval(queueTimerInterval);
-            hideQueueDisplay();
+            const timerElement = document.getElementById('queue-timer');
+            if (timerElement) {
+                timerElement.innerText = 'សុពលភាពអស់ហើយ';
+            }
             return;
         }
         
@@ -1029,19 +984,7 @@
             </div>
         `;
         
-        // Show queue at bottom
-        const queueBottom = document.getElementById('queue-bottom');
-        const queueNumBottom = document.getElementById('queue-num-bottom');
-        queueBottom.style.display = 'flex';
-        queueNumBottom.innerText = queueNum;
-        
         startQueueTimer();
-    }
-
-    // Hide Queue Display
-    function hideQueueDisplay() {
-        const queueBottom = document.getElementById('queue-bottom');
-        queueBottom.style.display = 'none';
     }
 
     // Navigation
@@ -1141,12 +1084,13 @@
         `).join('');
     }
 
-    // Quick Add to Cart (without options)
+    // Quick Add - Open modal to customize
     function quickAdd(productId, event) {
         const product = products.find(p => p.id === productId);
         if(!product) return;
         
-        addToCart(product, null, event);
+        // Open modal to select options
+        openModal(productId);
     }
 
     // Open Options Modal
@@ -1431,7 +1375,7 @@
 
         try {
             // This would send to your backend
-            console.log('Order:', payload);
+            console.log('Order:', JSON.stringify(payload, null, 2));
             
             alert(`✅ កុម្ម៉ង់បានជោគជ័យ!\n\n🎫 លេខរង់ចាំ: ${queueNum}\nសរុប: $${payload.total.toFixed(2)}\n\nសូមអរគុណ! 🙏`);
             
