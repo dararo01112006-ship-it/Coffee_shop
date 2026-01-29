@@ -11,9 +11,8 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 # ================== ការកំណត់ (CONFIG) ==================
 BOT_TOKEN = "8501341500:AAFvNtQIAzELusb_5u6EPgSjGMpBcv0avpo"
 CHAT_ID = 8091370821
- 
-SHOP_LAT = 11.52890104500027
-SHOP_LON = 104.9153656342366
+SHOP_LAT = 11.530147095158243
+SHOP_LON = 104.88507524022677
 MAX_DISTANCE = 2000  # ម៉ែត្រ
 EXCEL_FILE = "orders.xlsx"
 
